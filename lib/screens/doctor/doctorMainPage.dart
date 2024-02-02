@@ -9,7 +9,6 @@ import 'package:healthcare/screens/doctorsList.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-// import 'package:flutter_icons/flutter_icons.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:typicons_flutter/typicons_flutter.dart';
 import 'package:quick_actions/quick_actions.dart';
@@ -18,18 +17,18 @@ import 'package:healthcare/screens/homePage.dart';
 import 'package:healthcare/screens/myAppointments.dart';
 import 'package:healthcare/screens/doctorsList.dart';
 
-class MainPage extends StatefulWidget {
+class DoctorMainPage extends StatefulWidget {
   @override
-  _MainPageState createState() => _MainPageState();
+  _DoctorMainPageState createState() => _DoctorMainPageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _DoctorMainPageState extends State<DoctorMainPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedIndex = 0;
   List<Widget> _pages = [
     HomePage(),
-    DoctorsList(),
-    // Center(child: Text('New Appointment')),
+    // DoctorsList(),
+    // // Center(child: Text('New Appointment')),
     MyAppointments(),
     UserProfile(),
   ];
@@ -107,10 +106,10 @@ class _MainPageState extends State<MainPage> {
                         : TablerIcons.home_2,
                     text: 'Home',
                   ),
-                  GButton(
-                    icon: TablerIcons.search,
-                    text: 'Search',
-                  ),
+                  // GButton(
+                  //   icon: TablerIcons.search,
+                  //   text: 'Search',
+                  // ),
                   GButton(
                     iconSize: 28,
                     icon: _selectedIndex == 2

@@ -1,9 +1,21 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:healthcare/screens/doctor/doctorDetailForm.dart';
+import 'package:healthcare/screens/doctor/doctorMainPage.dart';
+import 'package:healthcare/screens/homePage.dart';
+import 'package:healthcare/screens/myAppointments.dart';
 import 'package:healthcare/screens/skip.dart';
 import 'package:healthcare/screens/firebaseAuth.dart';
+import 'package:healthcare/mainPage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:healthcare/screens/userProfile.dart';
+import 'package:healthcare/screens/doctorProfile.dart';
+import 'package:healthcare/screens/doctor/doctorMainPage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
       options: FirebaseOptions(
@@ -11,112 +23,60 @@ void main() async {
           appId: "1:394779846670:android:1daa1d2ae5a78d7549745f",
           messagingSenderId: "394779846670",
           projectId: "healthcare-8030a"));
-  runApp(const MyApp());
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  //  MyApp({super.key});
+  FirebaseAuth? _auth = FirebaseAuth.instance;
+  User? user;
+
+  Future<void> _getUser() async {
+    user = _auth!.currentUser;
+  }
+
+  Future<String?> _getUserRole() async {
+    String? role;
+    String? userId = _auth!.currentUser?.uid;
+
+    if (userId != null) {
+      DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      if (userSnapshot.exists) {
+        role = userSnapshot.get('role');
+      }
+    }
+
+    return role;
+  }
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    _getUser();
+    Future<String?> role = _getUserRole();
     return MaterialApp(
       initialRoute: '/',
       routes: {
         // When navigating to the "/" route, build the FirstScreen widget.
-        '/': (context) => Skip(),
+        '/': (context) => user == null
+            ? Skip()
+            : role == 'patient'
+                ? HomePage()
+                : DoctorMainPage(),
         '/login': (context) => FireBaseAuth(),
+        '/patientHome': (context) => MainPage(),
+        '/MyAppointments': (context) => MyAppointments(),
+        '/doctorHome': (context) => DoctorMainPage(),
+        '/doctorDetailForm': (context) => DoctorDetailForm(),
       },
       theme: ThemeData(brightness: Brightness.light),
       debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

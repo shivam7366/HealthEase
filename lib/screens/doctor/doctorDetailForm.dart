@@ -1,42 +1,32 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-// import 'package:flutter_icons/flutter_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:healthcare/screens/signIn.dart';
 
-class Register extends StatefulWidget {
+class DoctorDetailForm extends StatefulWidget {
   @override
-  _RegisterState createState() => _RegisterState();
+  _DoctorDetailFormState createState() => _DoctorDetailFormState();
 }
 
-class _RegisterState extends State<Register> {
+class _DoctorDetailFormState extends State<DoctorDetailForm> {
   FirebaseAuth _auth = FirebaseAuth.instance;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _displayName = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _mobileNoController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _passwordConfirmController =
+  final TextEditingController _specializationController =
       TextEditingController();
+  final TextEditingController _qualificationController =
+      TextEditingController();
+  final TextEditingController _openHourController = TextEditingController();
+  final TextEditingController _closeHourController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
   FocusNode f0 = new FocusNode();
   FocusNode f1 = new FocusNode();
   FocusNode f2 = new FocusNode();
   FocusNode f3 = new FocusNode();
   FocusNode f4 = new FocusNode();
   FocusNode f5 = new FocusNode();
-  var role = 'patient';
 
   bool? _isSuccess;
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +44,7 @@ class _RegisterState extends State<Register> {
                 children: <Widget>[
                   Container(
                     padding: EdgeInsets.fromLTRB(10, 40, 10, 10),
-                    child: _signUp(),
+                    child: _doctorDetail(),
                     // child: Text(
                     // 'Sign up',
                     // style: GoogleFonts.lato(
@@ -72,7 +62,7 @@ class _RegisterState extends State<Register> {
     );
   }
 
-  Widget _signUp() {
+  Widget _doctorDetail() {
     return Form(
       key: _formKey,
       child: Padding(
@@ -81,8 +71,8 @@ class _RegisterState extends State<Register> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Image.asset(
-              'assets/vector-doc2.jpg',
-              scale: 3.5,
+              'assets/doc.png',
+              scale: .5,
             ),
             SizedBox(
               height: 20,
@@ -90,7 +80,7 @@ class _RegisterState extends State<Register> {
             Container(
               padding: EdgeInsets.only(bottom: 50),
               child: Text(
-                'Sign up',
+                'Fill the details',
                 style: GoogleFonts.lato(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
@@ -103,8 +93,8 @@ class _RegisterState extends State<Register> {
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
               ),
-              keyboardType: TextInputType.emailAddress,
-              controller: _displayName,
+              keyboardType: TextInputType.name,
+              controller: _specializationController,
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.only(left: 20, top: 10, bottom: 10),
                 border: OutlineInputBorder(
@@ -113,7 +103,7 @@ class _RegisterState extends State<Register> {
                 ),
                 filled: true,
                 fillColor: Colors.grey[350],
-                hintText: 'Name',
+                hintText: 'Specialization',
                 hintStyle: GoogleFonts.lato(
                   color: Colors.black26,
                   fontSize: 18,
@@ -126,7 +116,8 @@ class _RegisterState extends State<Register> {
               },
               textInputAction: TextInputAction.next,
               validator: (value) {
-                if (value!.isEmpty) return 'Please enter the Name';
+                if (value!.isEmpty)
+                  return 'Please enter the Specialization eg. Dentist';
                 return null;
               },
             ),
@@ -139,8 +130,8 @@ class _RegisterState extends State<Register> {
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
               ),
-              keyboardType: TextInputType.emailAddress,
-              controller: _emailController,
+              keyboardType: TextInputType.name,
+              controller: _qualificationController,
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.only(left: 20, top: 10, bottom: 10),
                 border: OutlineInputBorder(
@@ -149,7 +140,7 @@ class _RegisterState extends State<Register> {
                 ),
                 filled: true,
                 fillColor: Colors.grey[350],
-                hintText: 'Email',
+                hintText: 'Qualifications',
                 hintStyle: GoogleFonts.lato(
                   color: Colors.black26,
                   fontSize: 18,
@@ -158,16 +149,14 @@ class _RegisterState extends State<Register> {
               ),
               onFieldSubmitted: (value) {
                 f1.unfocus();
-                if (_passwordController.text.isEmpty) {
+                if (_qualificationController.text.isEmpty) {
                   FocusScope.of(context).requestFocus(f2);
                 }
               },
               textInputAction: TextInputAction.next,
               validator: (value) {
                 if (value!.isEmpty) {
-                  return 'Please enter the Email';
-                } else if (!emailValidate(value)) {
-                  return 'Please enter correct Email';
+                  return 'Please enter the Qualifications eg. MBBS';
                 }
                 return null;
               },
@@ -181,8 +170,8 @@ class _RegisterState extends State<Register> {
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
               ),
-              keyboardType: TextInputType.number,
-              controller: _mobileNoController,
+              keyboardType: TextInputType.datetime,
+              controller: _openHourController,
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.only(left: 20, top: 10, bottom: 10),
                 border: OutlineInputBorder(
@@ -191,7 +180,7 @@ class _RegisterState extends State<Register> {
                 ),
                 filled: true,
                 fillColor: Colors.grey[350],
-                hintText: 'Mobile No.',
+                hintText: 'Opening Time',
                 hintStyle: GoogleFonts.lato(
                   color: Colors.black26,
                   fontSize: 18,
@@ -200,16 +189,14 @@ class _RegisterState extends State<Register> {
               ),
               onFieldSubmitted: (value) {
                 f2.unfocus();
-                if (_passwordController.text.isEmpty) {
+                if (_openHourController.text.isEmpty) {
                   FocusScope.of(context).requestFocus(f3);
                 }
               },
               textInputAction: TextInputAction.next,
               validator: (value) {
                 if (value!.isEmpty) {
-                  return 'Please enter the Mobile No';
-                } else if (value.length != 10) {
-                  return 'Please enter 10 digit Mobile No';
+                  return 'Please enter the Opening Time';
                 }
                 return null;
               },
@@ -223,8 +210,8 @@ class _RegisterState extends State<Register> {
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
               ),
-              //keyboardType: TextInputType.visiblePassword,
-              controller: _passwordController,
+              keyboardType: TextInputType.datetime,
+              controller: _closeHourController,
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.only(left: 20, top: 10, bottom: 10),
                 border: OutlineInputBorder(
@@ -233,7 +220,7 @@ class _RegisterState extends State<Register> {
                 ),
                 filled: true,
                 fillColor: Colors.grey[350],
-                hintText: 'Password',
+                hintText: 'Closing Time',
                 hintStyle: GoogleFonts.lato(
                   color: Colors.black26,
                   fontSize: 18,
@@ -242,21 +229,18 @@ class _RegisterState extends State<Register> {
               ),
               onFieldSubmitted: (value) {
                 f3.unfocus();
-                if (_passwordConfirmController.text.isEmpty) {
+                if (_closeHourController.text.isEmpty) {
                   FocusScope.of(context).requestFocus(f4);
                 }
               },
               textInputAction: TextInputAction.next,
               validator: (value) {
                 if (value!.isEmpty) {
-                  return 'Please enter the Password';
-                } else if (value.length < 8) {
-                  return 'Password must be at least 8 characters long';
+                  return 'Please enter the Closing Time';
                 } else {
                   return null;
                 }
               },
-              obscureText: true,
             ),
             SizedBox(
               height: 25.0,
@@ -267,7 +251,10 @@ class _RegisterState extends State<Register> {
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
               ),
-              controller: _passwordConfirmController,
+              keyboardType: TextInputType.multiline,
+              // minLines: 3,
+              // maxLines: 6,
+              controller: _addressController,
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.only(left: 20, top: 10, bottom: 10),
                 border: OutlineInputBorder(
@@ -276,7 +263,7 @@ class _RegisterState extends State<Register> {
                 ),
                 filled: true,
                 fillColor: Colors.grey[350],
-                hintText: 'Confirm Password',
+                hintText: 'Address',
                 hintStyle: GoogleFonts.lato(
                   color: Colors.black26,
                   fontSize: 18,
@@ -289,58 +276,14 @@ class _RegisterState extends State<Register> {
               textInputAction: TextInputAction.done,
               validator: (value) {
                 if (value!.isEmpty) {
-                  return 'Please enter the Password';
-                } else if (value.compareTo(_passwordController.text) != 0) {
-                  return 'Password not Matching';
+                  return 'Please enter the Address';
                 } else {
                   return null;
                 }
               },
-              obscureText: true,
             ),
             SizedBox(
               height: 25.0,
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        role = 'patient';
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      primary: role == 'patient' ? Colors.blue : null,
-                    ),
-                    child: Text(
-                      'I\'m Patient',
-                      style: TextStyle(
-                        color: role == 'patient' ? Colors.white : null,
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        role = 'doctor';
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      primary: role == 'doctor' ? Colors.blue : null,
-                    ),
-                    child: Text(
-                      'I\'m Doctor',
-                      style: TextStyle(
-                        color: role == 'doctor' ? Colors.white : null,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
             ),
             Container(
               padding: const EdgeInsets.only(top: 25.0),
@@ -349,7 +292,7 @@ class _RegisterState extends State<Register> {
                 height: 50,
                 child: ElevatedButton(
                   child: Text(
-                    "Sign Up",
+                    "Submit",
                     style: GoogleFonts.lato(
                       color: Colors.white,
                       fontSize: 18.0,
@@ -359,7 +302,7 @@ class _RegisterState extends State<Register> {
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       showLoaderDialog(context);
-                      _registerAccount();
+                      _updateDoctorDetails();
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -378,73 +321,6 @@ class _RegisterState extends State<Register> {
               width: MediaQuery.of(context).size.width,
               child: Divider(
                 thickness: 1.5,
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.only(top: 25),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                        color: Colors.red[700],
-                        borderRadius: BorderRadius.circular(32)),
-                    child: IconButton(
-                      icon: Icon(
-                        TablerIcons.brand_google,
-                        color: Colors.white,
-                      ),
-                      onPressed: () {},
-                    ),
-                  ),
-                  SizedBox(
-                    width: 30,
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                        color: Colors.blue[900],
-                        borderRadius: BorderRadius.circular(32)),
-                    child: IconButton(
-                      icon: Icon(
-                        TablerIcons.brand_facebook,
-                        color: Colors.white,
-                      ),
-                      onPressed: () {},
-                    ),
-                  )
-                ],
-              ),
-            ),
-            Container(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 5.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Already have an account?",
-                      style: GoogleFonts.lato(
-                        fontSize: 15.0,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    TextButton(
-                      style: ButtonStyle(
-                          overlayColor:
-                              MaterialStateProperty.all(Colors.transparent)),
-                      onPressed: () => _pushPage(context, SignIn()),
-                      child: Text(
-                        'Sign in',
-                        style: GoogleFonts.lato(
-                          fontSize: 15,
-                          color: Colors.indigo[700],
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ),
           ],
@@ -522,15 +398,36 @@ class _RegisterState extends State<Register> {
     }
   }
 
+  void _updateDoctorDetails() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      // await user.updateProfile(displayName: _specializationController.text);
+      FirebaseFirestore.instance.collection('doctors').doc(user.uid).set({
+        'address': _addressController.text,
+        'closeHour': _closeHourController.text,
+        'openHour': _openHourController.text,
+        'specification': _qualificationController.text,
+        'type': _specializationController.text,
+        'rating': null,
+        'image': null
+      }, SetOptions(merge: true));
+
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil('/doctorHome', (route) => false);
+    } else {
+      _isSuccess = false;
+    }
+  }
+
   void _registerAccount() async {
     User? user;
     UserCredential? credential;
 
     try {
-      credential = await _auth.createUserWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
+      // credential = await _auth.createUserWithEmailAndPassword(
+      //   email: _qualificationController.text,
+      //   // password: _passwordController.text,
+      // );
     } catch (error) {
       if (error.toString().compareTo(
               '[firebase_auth/email-already-in-use] The email address is already in use by another account.') ==
@@ -548,36 +445,22 @@ class _RegisterState extends State<Register> {
       if (!user.emailVerified) {
         await user.sendEmailVerification();
       }
-      await user.updateProfile(displayName: _displayName.text);
-
-      FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-        'name': _displayName.text,
-        'birthDate': null,
+      await user.updateProfile(displayName: _specializationController.text);
+      FirebaseFirestore.instance.collection('doctors').doc(user.uid).set({
+        'name': _specializationController.text,
+        'address': null,
         'email': user.email,
-        'phoneNumber': _mobileNoController.text,
-        'bio': null,
-        'city': null,
-        'role': role,
+        'phoneNumber': _openHourController.text,
+        'closeHour': null,
+        'openHour': null,
+        'specification': null,
+        'type': null,
+        'rating': null,
+        'image': null
       }, SetOptions(merge: true));
-      if (role == 'doctor')
-        FirebaseFirestore.instance.collection('doctors').doc(user.uid).set({
-          'name': "Dr. " + _displayName.text,
-          'address': null,
-          'email': user.email,
-          'phoneNumber': _mobileNoController.text,
-          'closeHour': null,
-          'openHour': null,
-          'specification': null,
-          'type': null,
-          'rating': null,
-          'image': null
-        }, SetOptions(merge: true));
 
-      role == 'patient'
-          ? Navigator.of(context).pushNamedAndRemoveUntil(
-              '/patientHome', (Route<dynamic> route) => false)
-          : Navigator.of(context)
-              .pushNamedAndRemoveUntil('/doctorDetailForm', (route) => false);
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil('/doctorHome', (route) => false);
     } else {
       _isSuccess = false;
     }

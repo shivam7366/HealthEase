@@ -1,9 +1,10 @@
-// import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 // import 'package:flutter_icons/flutter_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:healthcare/screens/register.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // import '../mainPage.dart';
 
@@ -13,7 +14,7 @@ class SignIn extends StatefulWidget {
 }
 
 class _SignInState extends State<SignIn> {
-  // FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseAuth _auth = FirebaseAuth.instance;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -173,7 +174,7 @@ class _SignInState extends State<SignIn> {
                   ),
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      // showLoaderDialog(context);
+                      showLoaderDialog(context);
                       _signInWithEmailAndPassword();
                     }
                   },
@@ -316,14 +317,67 @@ class _SignInState extends State<SignIn> {
     }
   }
 
-  void _signInWithEmailAndPassword() {
-    Navigator.of(context)
-        .pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
+  void _signInWithEmailAndPassword() async {
+    try {
+      final User? user = (await _auth.signInWithEmailAndPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      ))
+          .user;
+      // if (!user!.emailVerified) {
+      //   await user.sendEmailVerification();
+      // }
+
+      if (user != null) {
+        String? role = await getUserRole(user.uid);
+
+        if (role == 'doctor') {
+          Navigator.of(context).pushNamedAndRemoveUntil(
+              '/doctorHome', (Route<dynamic> route) => false);
+        } else {
+          Navigator.of(context).pushNamedAndRemoveUntil(
+              '/patientHome', (Route<dynamic> route) => false);
+        }
+      }
+    } catch (e) {
+      print(e);
+      final snackBar = SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              Icons.info_outline,
+              color: Colors.white,
+            ),
+            Text(" There was a problem signing you in"),
+          ],
+        ),
+      );
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
   }
 
   void _pushPage(BuildContext context, Widget page) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => page),
     );
+  }
+}
+
+Future<String?> getUserRole(String uid) async {
+  try {
+    DocumentSnapshot snapshot =
+        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+
+    if (snapshot.exists) {
+      Map<String, dynamic> userData = snapshot.data() as Map<String, dynamic>;
+      String? role = userData['role'] as String?;
+      return role;
+    } else {
+      return null;
+    }
+  } catch (e) {
+    print(e);
+    return null;
   }
 }
